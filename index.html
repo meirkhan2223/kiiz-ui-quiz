@@ -352,7 +352,7 @@ const R3 = [
   {q:'Үзіндіні тыңдап, мультфильмнің атауын табыңыз.', yt:'3nnHzwDbV9A', start:90, a:'«Алдар Көсе»', as:'Алдар Көсе'},
   {q:'Үзіндіні тыңдап, мультфильмнің атауын табыңыз.', yt:'YQwpL_vIcp8', start:20, a:'«Зверополис»', note:'Қазақша — «Аңдар шаһары», 2016 ж.', as:'Зверополис, қазақша Аңдар шаһары'},
   {q:'Үзіндіні тыңдап, фильмнің атауын табыңыз.', yt:'yQa1xX0FKPs', start:300, a:'«Менің атым Қожа»', note:'1963 ж. · реж. Абдулла Қарсақбаев', as:'Менің атым Қожа фильмі'},
-  {q:'Бұл саундтрек қай телехикаядан алынған?', yt:'ND5Dyiv4iEw', start:55, a:'«Келінжан»', note:'Қайрат Нұртас — «Жүрегімді аяймын» (OST «Келінжан 4»)', as:'Келінжан телехикаясы'},
+  {q:'Бұл саундтрек қай телехикаядан алынған?', yt:'KM-bfRqa6ZE', start:50, a:'«Келінжан»', note:'Мақпал Жүнісова — «Кетсең де шалғай»', as:'Келінжан телехикаясы'},
   {q:'Әнді тыңдап, орындаушыны табыңыз.', yt:'tev0BTf0XW4', start:45, a:'Мархаба Сәби', note:'«Ғана» әні'},
   {q:'Әнді тыңдап, орындаушыны табыңыз.', yt:'y9y_GFCf_Zk', start:15, a:'Роза Бағланова', note:'«Саулем-ай» әні'},
   {q:'Әнді тыңдап, орындаушыны табыңыз.', yt:'UPs68TTKAX0', start:10, a:'Күләш Байсейітова', note:'«Гәкку» әні'},
@@ -675,6 +675,8 @@ const V = {name:'eleven', cur:null};
 try { const sv = localStorage.getItem('voice2'); if (VOICES[sv]) V.name = sv; } catch(e){}
 function setVoice(n){ V.name = n; try { localStorage.setItem('voice2', n); } catch(e){}
   document.querySelectorAll('#voicePick button').forEach(b => b.classList.toggle('sel', b.dataset.v===n)); }
+// cache-buster: a changed text gets a new URL, so the browser never replays an old recording
+function textHash(t){ let h = 5381; for (let i=0;i<t.length;i++) h = ((h<<5) + h + t.charCodeAt(i)) >>> 0; return h.toString(36); }
 function speakId(id, done){
   const text = UTT[id]; if (!text){ if (done) done(); return; }
   if (V.name === 'browser') return speak(text, done);
@@ -687,7 +689,7 @@ function speakId(id, done){
     if (tok!==S.tok) return;
     const name = chain.shift();
     if (!name){ V.cur = null; speak(text, done); return; }
-    const au = new Audio(`voice/${name}/${id}.mp3`); V.cur = au;
+    const au = new Audio(`voice/${name}/${id}.mp3?v=${textHash(text)}`); V.cur = au;
     let failed = false; const fail = () => { if (failed) return; failed = true; tryNext(); };
     au.onended = () => { if (tok!==S.tok) return; V.cur = null; M.duck=false; musicApply(); if (done) done(); };
     au.onerror = fail;

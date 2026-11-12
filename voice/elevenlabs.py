@@ -52,10 +52,12 @@ def main():
         only = set(args[args.index("--only") + 1].split(","))
     texts = json.load(open(os.path.join(HERE, "utterances.json"), encoding="utf-8"))
     os.makedirs(OUT, exist_ok=True)
+    man_path = os.path.join(OUT, "manifest.json")  # which text each file was made from
+    man = json.load(open(man_path, encoding="utf-8")) if os.path.exists(man_path) else {}
     todo = [(k, t) for k, t in texts.items() if (only is None or k in only)]
     for n, (k, text) in enumerate(todo, 1):
         path = os.path.join(OUT, f"{k}.mp3")
-        if os.path.exists(path) and not force and only is None:
+        if os.path.exists(path) and not force and only is None and man.get(k) == text:
             print(f"[{n}/{len(todo)}] {k} бар, өткізілді"); continue
         body = {"text": text, "model_id": MODEL,
                 "voice_settings": {"stability": 0.5, "similarity_boost": 0.8}}
@@ -63,6 +65,8 @@ def main():
             try:
                 with req(f"{API}/text-to-speech/{voice}?output_format=mp3_44100_128", body) as r:
                     open(path, "wb").write(r.read())
+                man[k] = text
+                json.dump(man, open(man_path, "w", encoding="utf-8"), ensure_ascii=False, indent=0)
                 print(f"[{n}/{len(todo)}] {k} ✓"); break
             except urllib.error.HTTPError as e:
                 msg = e.read().decode(errors="ignore")[:300]
