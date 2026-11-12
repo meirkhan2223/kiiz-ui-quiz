@@ -94,6 +94,31 @@ body.orn-on .orn{opacity:.32}
 .qtext{margin:0;font:600 clamp(24px,3.3vw,58px)/1.3 var(--body);text-wrap:pretty;perspective:900px;color:#fffaf0;text-shadow:0 4px 30px rgba(0,0,0,.5)}
 .qtext.m{font-size:clamp(21px,2.6vw,46px)}
 .qtext.s{font-size:clamp(18px,2.05vw,36px);line-height:1.42}
+/* clip (round 3) */
+.clip{position:relative;margin-top:clamp(20px,4vh,40px);max-width:760px;height:clamp(150px,22vh,230px);border-radius:24px;overflow:hidden;cursor:pointer;
+  border:1px solid var(--line);background:linear-gradient(160deg,rgba(233,196,106,.1),rgba(8,15,32,.65) 65%);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 24px 70px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,241,201,.15)}
+.ytbox{position:absolute;inset:0;opacity:0;pointer-events:none}
+.ytbox iframe{width:100%;height:100%;border:0;display:block}
+.viz{position:absolute;left:6%;right:6%;top:14%;bottom:34%;display:flex;align-items:center;justify-content:space-between;gap:4px}
+.viz i{flex:1;height:calc(var(--h) * 100%);max-height:100%;border-radius:4px;background:linear-gradient(180deg,#fff1c9,#c99a3f);opacity:.28;transform:scaleY(.18);transform-origin:center;transition:transform .8s var(--ease),opacity .8s}
+.clip.playing .viz i{opacity:.95;animation:eq calc(.55s + var(--k) * .013s) ease-in-out calc(var(--k) * -.09s) infinite alternate}
+@keyframes eq{0%{transform:scaleY(.15)}100%{transform:scaleY(1)}}
+.cfoot{position:absolute;left:5%;right:5%;bottom:16%;display:flex;align-items:center;gap:14px;font:600 clamp(12px,1.05vw,16px)/1 var(--body);letter-spacing:.14em;text-transform:uppercase;color:var(--gold-3)}
+.cplay{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(180deg,#f3d58d,#c9963a);color:#2a1a05;flex:none;transition:transform .4s var(--ease)}
+.cplay svg{width:15px;height:15px;margin-left:2px}
+.clip:hover .cplay{transform:scale(1.08)}
+.clip.playing .cplay{animation:breath 1.2s ease-in-out infinite}
+.cstate{flex:1}
+.ctime{font:700 clamp(16px,1.5vw,22px)/1 var(--head);letter-spacing:0;color:var(--cream);font-variant-numeric:tabular-nums}
+.cbar{position:absolute;left:5%;right:5%;bottom:9%;height:3px;border-radius:3px;background:rgba(247,239,225,.12);overflow:hidden}
+.cbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--gold-2),var(--gold-3));box-shadow:0 0 12px var(--gold)}
+.avideo{position:relative;width:min(640px,80vw);aspect-ratio:16/9;margin-top:0;max-height:0;opacity:0;border-radius:20px;overflow:hidden;
+  transition:max-height 1.2s var(--ease),opacity 1s var(--ease),margin 1.2s var(--ease);box-shadow:0 24px 70px rgba(0,0,0,.5);border:1px solid var(--line)}
+.avideo.on{max-height:40vh;opacity:1;margin-top:clamp(16px,3vh,30px)}
+.avideo .ytbox.show{opacity:1}
+.s-a .agrid:has(.avideo){justify-content:flex-start}
+.s-a .agrid:has(.avideo.on) .acard{padding:clamp(18px,3vh,34px) clamp(26px,5vw,80px);margin-top:clamp(14px,2.4vh,26px)}
 .qtools{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:2vh}
 .btn{display:inline-flex;align-items:center;gap:9px;padding:.72em 1.15em;border-radius:999px;border:1px solid rgba(247,239,225,.16);background:rgba(10,18,36,.45);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);cursor:pointer;font:500 clamp(12px,1vw,15px)/1 var(--body);letter-spacing:.04em;color:var(--cream);
@@ -275,7 +300,7 @@ body.idle{cursor:none}
 <div id="start">
   <div class="emblem" id="startEmblem"></div>
   <h1 class="goldtx">Білім шаңырағы</h1>
-  <p>Зияткерлік ойын · Эрудит · Парадокс</p>
+  <p>Зияткерлік ойын · Эрудит · Парадокс · Әуенді тап</p>
   <button id="go">Бастау</button>
   <small>Толық экран — F · Келесі — → немесе Space · Көмек — H</small>
 </div>
@@ -320,13 +345,26 @@ const R2 = [
   {q:'Қазақта жылқының жасына қарай аталатын «құнан» нешеде?', a:'Екі жаста'},
   {q:'Қазақтың тұңғыш әйел-ұшқыштарының бірі, Ұлы Отан соғысына қатысып, «Халық Қаһарманы» атағын алған кім?', a:'Хиуаз Доспанова'}
 ];
+/* 3-тур: YouTube үзінділері. start — үзінді басталатын секунд (қажет болса өзгертіңіз), ұзақтығы CLIP секунд */
+const CLIP = 15;
+const R3 = [
+  {q:'Үзіндіні тыңдап, фильмнің атауын табыңыз.', yt:'9VBvh_mRzRI', start:60,  a:'«Қыз Жібек»', note:'1970 ж. · реж. Сұлтан-Ахмет Қожықов', as:'Қыз Жібек фильмі'},
+  {q:'Үзіндіні тыңдап, мультфильмнің атауын табыңыз.', yt:'3nnHzwDbV9A', start:90, a:'«Алдар Көсе»', as:'Алдар Көсе'},
+  {q:'Үзіндіні тыңдап, мультфильмнің атауын табыңыз.', yt:'YQwpL_vIcp8', start:20, a:'«Зверополис»', note:'Қазақша — «Аңдар шаһары», 2016 ж.', as:'Зверополис, қазақша Аңдар шаһары'},
+  {q:'Үзіндіні тыңдап, фильмнің атауын табыңыз.', yt:'yQa1xX0FKPs', start:300, a:'«Менің атым Қожа»', note:'1963 ж. · реж. Абдулла Қарсақбаев', as:'Менің атым Қожа фильмі'},
+  {q:'Бұл саундтрек қай телехикаядан алынған?', yt:'ND5Dyiv4iEw', start:55, a:'«Келінжан»', note:'Қайрат Нұртас — «Жүрегімді аяймын» (OST «Келінжан 4»)', as:'Келінжан телехикаясы'},
+  {q:'Әнді тыңдап, орындаушыны табыңыз.', yt:'tev0BTf0XW4', start:45, a:'Мархаба Сәби', note:'«Ғана» әні'},
+  {q:'Әнді тыңдап, орындаушыны табыңыз.', yt:'y9y_GFCf_Zk', start:15, a:'Роза Бағланова', note:'«Саулем-ай» әні'},
+  {q:'Әнді тыңдап, орындаушыны табыңыз.', yt:'UPs68TTKAX0', start:10, a:'Күләш Байсейітова', note:'«Гәкку» әні'},
+  {q:'Әнді тыңдап, оның атауын табыңыз.', yt:'FcJj48uZ4T4', start:30, a:'«Тау ішінде»', note:'Сөзі мен әні: Сәкен Сейфуллин · Орындаған: Димаш Құдайберген', as:'Тау ішінде'}
+];
 const ORDW = ['Бірінші','Екінші','Үшінші','Төртінші','Бесінші','Алтыншы','Жетінші','Сегізінші','Тоғызыншы','Оныншы','Он бірінші','Он екінші'];
-const NUMW = {10:'Он',11:'Он бір'};
+const NUMW = {9:'Тоғыз',10:'Он',11:'Он бір'};
 
 const slides = [];
 slides.push({t:'intro'},{t:'greet'},{t:'luck'});
 function addRound(n, name, list){
-  slides.push({t:'round', n, name, count:list.length});
+  slides.push({t:'round', n, name, count:list.length, clips:!!list[0].yt});
   list.forEach((it,i)=>slides.push({t:'q', n, name, i, total:list.length, ...it}));
   slides.push({t:'sheet', n});
   slides.push({t:'ans-title', n, name});
@@ -334,6 +372,7 @@ function addRound(n, name, list){
 }
 addRound(1,'Эрудит',R1);
 addRound(2,'Парадокс',R2);
+addRound(3,'Әуенді тап',R3);
 slides.push({t:'end'});
 
 /* ================= TEMPLATES ================= */
@@ -375,7 +414,7 @@ function render(s, idx){
   case 'intro': return `<section class="slide s-intro" style="--base:1600ms">
       <div ${rv(0)}><div class="kicker"><i></i>Зияткерлік ойын<i></i></div></div>
       <h1 class="mega"><span class="line">${chars('Білім',1.9,.07)}</span><span class="line gold">${chars('шаңырағы',2.2,.06)}</span></h1>
-      <div class="sub rv" style="--i:9"><span>I тур · Эрудит</span><b></b><span>II тур · Парадокс</span></div>
+      <div class="sub rv" style="--i:9"><span>I тур · Эрудит</span><b></b><span>II тур · Парадокс</span><b></b><span>III тур · Әуенді тап</span></div>
       <div class="hint rv" style="--i:14">Жалғастыру үшін →</div></section>`;
   case 'greet': return `<section class="slide">
       <div class="emblem rv" style="--i:0">${SHANYRAQ}</div>
@@ -390,8 +429,30 @@ function render(s, idx){
       <div class="bignum">${s.n}</div>
       <div ${rv(1)}><div class="kicker"><i></i>${s.n}-тур<i></i></div></div>
       <h1 class="mega gold">${chars(s.name,.45,.075)}</h1>
-      <div class="rmeta rv" style="--i:7"><span class="pill">${s.count} сұрақ</span><span class="pill">Әр сұраққа 1 минут</span></div></section>`;
-  case 'q': { const sz = sizeOf(s.q, 110, 190);
+      <div class="rmeta rv" style="--i:7">${s.clips
+        ? `<span class="pill">${s.count} үзінді</span><span class="pill">Тыңдау — ${CLIP} секунд</span><span class="pill">Ойлану — 1 минут</span>`
+        : `<span class="pill">${s.count} сұрақ</span><span class="pill">Әр сұраққа 1 минут</span>`}</div></section>`;
+  case 'q': if (s.yt) return `<section class="slide s-q">
+      <header class="qhead rv" style="--i:0"><div class="chip"><span class="dot"></span><b>${s.n}-тур</b>${s.name}</div>
+        <div class="qcount">Үзінді<b>${s.i+1}</b>/ ${s.total}</div></header>
+      <div class="qgrid">
+        <div class="qbody"><div class="qghost">${s.i+1}</div>
+          <div class="qlabel rv" style="--i:1">${s.i+1}-үзінді</div>
+          <p class="qtext m">${words(s.q,.35,.05)}</p>
+          <div class="clip rv" style="--i:3" data-act="clip">
+            <div class="ytbox"><div id="yt${idx}"></div></div>
+            <div class="viz">${Array.from({length:36},(_,k)=>`<i style="--k:${k};--h:${(.35+.65*Math.abs(Math.sin(k*1.7)*Math.cos(k*.45))).toFixed(2)}"></i>`).join('')}</div>
+            <div class="cfoot"><span class="cplay">${IC.play}</span><span class="cstate">Үзінді дайындалуда…</span><span class="ctime">0:${CLIP}</span></div>
+            <div class="cbar"><i></i></div>
+          </div></div>
+        <div class="timer rv" style="--i:4">${timerSVG(idx)}<div class="tc"><div class="tnum">60</div><div class="tlab">тыңдаңыз…</div></div></div>
+      </div>
+      <div class="qtools rv" style="--i:6">
+        <button class="btn" data-act="clip">${IC.speak}Қайта тыңдау</button>
+        <button class="btn" data-act="timer">${IC.play}<span>Бастау</span></button>
+        <button class="btn" data-act="reset">${IC.reset}Қайта бастау</button>
+      </div></section>`;
+  { const sz = sizeOf(s.q, 110, 190);
     return `<section class="slide s-q">
       <header class="qhead rv" style="--i:0"><div class="chip"><span class="dot"></span><b>${s.n}-тур</b>${s.name}</div>
         <div class="qcount">Сұрақ<b>${s.i+1}</b>/ ${s.total}</div></header>
@@ -429,6 +490,7 @@ function render(s, idx){
           ${s.note?`<div class="anote">${s.note}</div>`:''}
           <div class="acover"><span>Жауапты ашу</span><kbd>→</kbd></div>
         </div>
+        ${s.yt ? `<div class="avideo"><div class="ytbox show"><div id="yt${idx}"></div></div></div>` : ''}
       </div></section>`; }
   case 'end': return `<section class="slide">
       <div class="emblem rv" style="--i:0">${SHANYRAQ}</div>
@@ -530,7 +592,7 @@ function synStop(){ if (!Syn.on) return; Syn.on=false; clearInterval(Syn.id); if
 
 const M = {mode:'synth', el:null, level:0, on:true, duck:false, started:false};
 function musicApply(){
-  const v = M.on ? M.level * (M.duck ? .28 : 1) : 0;
+  const v = (M.on && !M.clip) ? M.level * (M.duck ? .28 : 1) : 0;
   if (M.mode === 'file' && M.el){
     tween('mvol', M.el, {volume: Math.min(1, v*.9)}, .9, ease.lin);
     if (M.started && M.on && M.el.paused) M.el.play().catch(()=>{});
@@ -595,8 +657,10 @@ function enterText(s){
   switch(s.t){
     case 'greet': return 'Ассалаумағалейкум, құрметті ұстаздар! Бүгінгі зияткерлік ойынымызға қош келдіңіздер! Шаңырағымыз биік, төріміз құтты болсын!';
     case 'luck': return 'Барлық командаларға сәттілік тілейміз! Білім — таусылмас қазына. Ойын әділ өтіп, жеңіс лайықтыға бұйырсын! Ендеше, бірінші турды бастаймыз!';
-    case 'round': return `${ORDW[s.n-1]} тур. ${s.name}. ${NUMW[s.count]} сұрақ. Әр сұраққа бір минут беріледі.`;
-    case 'q': return `${ORDW[s.i]} сұрақ. ${s.say||s.q}`;
+    case 'round': return s.clips
+      ? `${ORDW[s.n-1]} тур. ${s.name}. ${NUMW[s.count]} үзінді. Әр үзіндіні он бес секунд тыңдайсыздар, ойлануға бір минут беріледі.`
+      : `${ORDW[s.n-1]} тур. ${s.name}. ${NUMW[s.count]} сұрақ. Әр сұраққа бір минут беріледі.`;
+    case 'q': return s.yt ? `${ORDW[s.i]} үзінді. ${s.q}` : `${ORDW[s.i]} сұрақ. ${s.say||s.q}`;
     case 'sheet': return `${ORDW[s.n-1]} тур аяқталды. Жауап парақтарын тапсырыңыздар! Енді дұрыс жауаптармен танысайық.`;
     case 'ans-title': return `${ORDW[s.n-1]} турдың жауаптары.`;
     case 'end': return 'Рақмет! Ойынға белсене қатысқан барлық командалар мен ұстаздарға алғыс білдіреміз!';
@@ -915,7 +979,7 @@ function go(n){
   if (n<0 || n>=slides.length || n===cur) return;
   const dir = n > cur ? 1 : -1;
   const s = slides[n];
-  stopSpeak(); T.el = null; T.state = 'idle';
+  stopSpeak(); clipDestroy(); T.el = null; T.state = 'idle';
   if (curEl){ const old=curEl; old.style.setProperty('--dir',dir); old.classList.add('out'); setTimeout(()=>old.remove(), 1000); }
   const wrap = document.createElement('div'); wrap.innerHTML = render(s, n);
   const el = wrap.firstElementChild; el.style.setProperty('--dir',dir);
@@ -934,18 +998,97 @@ function go(n){
   onEnter(s, el);
 }
 
+/* ================= YOUTUBE CLIPS ================= */
+let ytP = null;
+function loadYT(){
+  if (ytP) return ytP;
+  ytP = new Promise((res, rej) => {
+    if (window.YT && YT.Player) return res();
+    const prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => { if (prev) prev(); res(); };
+    const sc = document.createElement('script'); sc.src = 'https://www.youtube.com/iframe_api';
+    sc.onerror = () => { ytP = null; rej(new Error('yt')); };
+    document.head.appendChild(sc);
+    setTimeout(() => rej(new Error('timeout')), 15000);
+  });
+  return ytP;
+}
+const CL = {player:null, el:null, s:null, ready:false, want:false, playing:false, done:true, onDone:null, firstDone:false};
+const fmt = t => '0:' + String(Math.max(0, Math.ceil(t))).padStart(2,'0');
+function cSet(txt){ const e = CL.el && CL.el.querySelector('.cstate'); if (e) e.textContent = txt; }
+function clipDestroy(){
+  if (CL.player){ try { CL.player.destroy(); } catch(e){} }
+  CL.player = null; CL.el = null; CL.s = null; CL.ready = false; CL.want = false; CL.playing = false; CL.done = true;
+  if (M.clip){ M.clip = false; musicApply(); }
+}
+function clipMount(el, s, onDone){
+  clipDestroy();
+  CL.el = el; CL.s = s; CL.onDone = onDone; CL.firstDone = false;
+  const holder = el.querySelector(`[id^="yt"]`);
+  loadYT().then(() => {
+    if (CL.el !== el) return;
+    CL.player = new YT.Player(holder.id, {
+      width:'100%', height:'100%', videoId:s.yt,
+      playerVars:{start:s.start, end:s.start+CLIP, controls:0, disablekb:1, modestbranding:1, rel:0, playsinline:1, iv_load_policy:3, fs:0},
+      events:{
+        onReady:() => { if (CL.el !== el) return; CL.ready = true; cSet('Тыңдауға дайын'); if (CL.want) clipPlay(); },
+        onStateChange:e => {
+          if (CL.el !== el) return;
+          if (e.data === YT.PlayerState.PLAYING){ CL.playing = true; el.querySelector('.clip, .avideo')?.classList.add('playing'); cSet('Тыңдаңыз…'); }
+          else if (e.data === YT.PlayerState.ENDED) clipEnd();
+          else if (e.data === YT.PlayerState.PAUSED && CL.playing && !CL.done){ CL.playing = false; cSet('Кідіртілді'); }
+        },
+        onError:() => { if (CL.el !== el) return; cSet('Бейне ашылмады'); clipEnd(); }
+      }
+    });
+  }).catch(() => { if (CL.el === el){ cSet('YouTube ашылмады — интернетті тексеріңіз'); if (onDone) onDone(); } });
+}
+function clipPlay(){
+  if (!CL.el) return;
+  if (!CL.ready){ CL.want = true; cSet('Жүктелуде…'); return; }
+  CL.want = false; CL.done = false;
+  stopSpeak();
+  try { CL.player.seekTo(CL.s.start, true); CL.player.unMute(); CL.player.setVolume(100); CL.player.playVideo(); } catch(e){}
+  M.clip = true; musicApply(); cSet('Жүктелуде…');
+  // autoplay blocked or slow? offer a click
+  const el = CL.el; setTimeout(() => { if (CL.el===el && !CL.playing && !CL.done) cSet('Жүктелуде… басталмаса, осында басыңыз ▶'); }, 6000);
+}
+function clipEnd(){
+  if (CL.done && CL.firstDone) return;
+  CL.done = true; CL.playing = false;
+  CL.el && CL.el.querySelector('.clip, .avideo')?.classList.remove('playing');
+  try { CL.player && CL.player.pauseVideo(); } catch(e){}
+  M.clip = false; musicApply();
+  cSet('Үзінді аяқталды');
+  const bar = CL.el && CL.el.querySelector('.cbar i'); if (bar) bar.style.width = '100%';
+  const tm = CL.el && CL.el.querySelector('.ctime'); if (tm) tm.textContent = '0:00';
+  if (!CL.firstDone){ CL.firstDone = true; if (CL.onDone) CL.onDone(); }
+}
+function clipTick(){
+  if (!CL.playing || !CL.player || CL.done || !CL.player.getCurrentTime) return;
+  const t = CL.player.getCurrentTime() - CL.s.start;
+  const bar = CL.el.querySelector('.cbar i'); if (bar) bar.style.width = Math.min(100, Math.max(0, t/CLIP*100)) + '%';
+  const tm = CL.el.querySelector('.ctime'); if (tm) tm.textContent = fmt(CLIP - t);
+  if (t >= CLIP) clipEnd();
+}
+
 const DELAY = {greet:1500,luck:1300,round:1400,q:1300,sheet:1200,'ans-title':1300,end:1500};
 function onEnter(s, el){
+  if (s.yt) clipMount(el, s, s.t==='q' ? () => { if (curEl===el) timerStart(); } : null);
   const id = 's'+cur; if (!UTT[id]) return;
   if (s.t==='q') timerBind(el);
   const tok = S.tok;
-  setTimeout(()=>{ if (tok===S.tok && curEl===el) speakId(id, s.t==='q' ? () => { if (curEl===el) timerStart(); } : null); }, DELAY[s.t]);
+  const after = s.t!=='q' ? null : s.yt ? () => { if (curEl===el) clipPlay(); } : () => { if (curEl===el) timerStart(); };
+  setTimeout(()=>{ if (tok===S.tok && curEl===el) speakId(id, after); }, DELAY[s.t]);
 }
 function reveal(){
   const card = curEl && curEl.querySelector('.acard');
   if (!card || card.classList.contains('revealed')) return false;
   card.classList.add('revealed'); SFX.chime();
-  const s = slides[cur], id = 'a'+cur; setTimeout(()=>{ if (slides[cur]===s) speakId(id); }, 500);
+  const s = slides[cur], id = 'a'+cur, el = curEl;
+  setTimeout(()=>{ if (slides[cur]===s) speakId(id, s.yt ? () => {
+    if (curEl!==el) return; const v = el.querySelector('.avideo'); if (v) v.classList.add('on'); setTimeout(()=>{ if (curEl===el) clipPlay(); }, 700);
+  } : null); }, 500);
   return true;
 }
 function next(){ if (!started) return begin(); if (slides[cur].t==='a' && reveal()) return; go(cur+1); }
@@ -957,6 +1100,7 @@ function begin(){
   if (started) return; started = true;
   initAudio(); if (A.ctx) A.ctx.resume();
   M.started = true;
+  loadYT().catch(()=>{});
   if (M.mode==='file') M.el.play().catch(()=>{}); else synStart();
   const fs = document.documentElement.requestFullscreen; if (fs && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(()=>{});
   $('#start').classList.add('gone'); setTimeout(()=>$('#start').remove(), 1800);
@@ -982,6 +1126,7 @@ $('#stage').addEventListener('click', e => {
   if (act==='timer') timerToggle();
   if (act==='reset') timerReset();
   if (act==='reread' && s.t==='q') speakId('s'+cur);
+  if (act==='clip') clipPlay();
 });
 addEventListener('keydown', e => {
   if (e.target.tagName==='INPUT') return;
@@ -994,7 +1139,7 @@ addEventListener('keydown', e => {
   else if (k==='v'||k==='V'||k==='м'||k==='М') toggleVoice();
   else if (k==='p'||k==='P'||k==='з'||k==='З') timerToggle();
   else if (k==='0') timerReset();
-  else if ((k==='r'||k==='R'||k==='к'||k==='К') && slides[cur].t==='q') speakId('s'+cur);
+  else if ((k==='r'||k==='R'||k==='к'||k==='К') && slides[cur].t==='q') { if (slides[cur].yt) clipPlay(); else speakId('s'+cur); }
   else if (k==='h'||k==='H'||k==='?'||k==='р'||k==='Р') $('#help').classList.toggle('open');
   else if (k==='Home') go(0);
   else if (k==='End') go(slides.length-1);
@@ -1010,7 +1155,7 @@ initThree();
 let last = performance.now();
 function frame(now){
   const dt = Math.min(.05, (now-last)/1000); last = now;
-  runTweens(now); timerUpdate(dt);
+  runTweens(now); timerUpdate(dt); clipTick();
   if (three) three.update(dt, now/1000);
   requestAnimationFrame(frame);
 }
